@@ -4,6 +4,7 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 use \App\Http\Middleware\AuthUser;
+use App\Console\Commands\PruneExpiredTokens;
 
 class Kernel extends HttpKernel
 {
@@ -24,14 +25,16 @@ class Kernel extends HttpKernel
     protected $middlewareGroups = [
         'web' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\HandleCors::class,  // Ensure CORS is applied here
+            'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\HandleCors::class,  // CORS middleware applied to Web
         ],
 
         'api' => [
+            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
+            \App\Http\Middleware\HandleCors::class,  // Ensure CORS is applied here
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            \App\Http\Middleware\HandleCors::class,  // CORS middleware applied to API
         ],
     ];
 
@@ -43,5 +46,9 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         // Other route middleware
         'authUser' => AuthUser::class,
+    ];
+
+    protected $commands = [
+        PruneExpiredTokens::class,
     ];
 }

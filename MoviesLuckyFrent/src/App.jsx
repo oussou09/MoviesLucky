@@ -12,11 +12,12 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import FromLogin from './AppSite/AppMain/MainSection/AuthForms/FromLogin';
 import FromRegister from './AppSite/AppMain/MainSection/AuthForms/FromRegister';
-import MovieDetails from './AppSite/AppMain/MovieDetails';
-import CommantMovieDetails from './AppSite/AppMain/MainSection/CommantMovieDetails';
+import MovieDetails from './AppSite/AppMain/MainSection/HomePage/MovieDetails';
+import CommantMovieDetails from './AppSite/AppMain/MainSection/HomePage/CommantMovieDetails';
 import AuthRedirect from './AppSite/utils/UserRouteCheck';
 import Profile from './AppSite/AppMain/MainSection/AuthForms/Profile';
 import { AuthProvider } from './AppSite/utils/AuthContext'; // Import AuthProvider
+import Pricing from './AppSite/AppMain/MainSection/pricing/Pricing';
 
 
 
@@ -57,6 +58,15 @@ function App() {
                         <>
                             <Header />
                             <About />
+                            <Footer />
+                        </>
+                    } />
+            <Route
+                path="/pricing"
+                element={
+                        <>
+                            <Header />
+                            <Pricing />
                             <Footer />
                         </>
                     } />

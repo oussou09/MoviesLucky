@@ -21,9 +21,10 @@ Route::get('/Comments/{title}', [AuthController::class, 'getCommentsMovie']);
 // Payment route
 
 // Unauthorized route
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'authUser'])->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/stripe', [StripeController::class, 'stripeRequest']);
+    // Route::post('/refresh-token', [AuthController::class, 'refreshToken']);
     Route::post('/Comments', [AuthController::class, 'StoreComments']);
+    Route::post('/stripe', [StripeController::class, 'stripeRequest']);
     Route::post('/logout', [AuthController::class, 'logout']);
 });

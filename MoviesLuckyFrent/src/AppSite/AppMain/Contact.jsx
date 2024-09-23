@@ -5,6 +5,7 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useState } from 'react';
 import { SnakAlert, SnakAlertError } from '../AlertMessage/SnakAlert';
+import { getCsrfToken } from '../utils/csrfTokenCheck';
 
 
 
@@ -22,38 +23,29 @@ const Contact = () => {
         message: data.message
     }
 
-    axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', { withCredentials: true })
-    .then(() => {
-        const csrfToken = Cookies.get('XSRF-TOKEN');
-        axios.post('http://127.0.0.1:8000/api/contact-data', ValueDataContact,
-            {
-            withCredentials: true, // Ensure credentials are included
-            headers: {
-                'Content-Type': 'application/json',
-                'X-XSRF-TOKEN': csrfToken,  // Add the CSRF token here
-            }
-        })
-        .then(response => {
-            console.log('Form submitted:', response);
-            reset();
-            setAlertMessage(
-                `Hello ${data.name}! We received your message successfully. We will respond to you as fast as we can at your email ${data.email}.`
-            );
-            setIsError(false);
-            setAlertOpen(true);
-        })
-        .catch(error => {
-            console.error('Error posting data::', error);
-            setAlertMessage(`Sorry ${data.username}!\n\nFailed to send your message.`);
-            setIsError(true);
-            setAlertOpen(true);
-        });
+    getCsrfToken()
+    .then(csrfToken => axios.post('http://127.0.0.1:8000/api/contact-data', ValueDataContact, {
+      withCredentials: true, // Ensure credentials are included
+      headers: {
+        'X-XSRF-TOKEN': csrfToken, // Add the CSRF token here
+      }
+    }))
+    .then(response => {
+      console.log('Form submitted:', response);
+      reset();
+      setAlertMessage(
+        `Hello ${data.name}! We received your message successfully. We will respond to you as fast as we can at your email ${data.email}.`
+      );
+      setIsError(false);
+      setAlertOpen(true);
     })
     .catch(error => {
-        console.error('Error fetching CSRF token:', error);
+      console.error('Error posting data:', error);
+      setAlertMessage(`Sorry ${data.username}! Failed to send your message.`);
+      setIsError(true);
+      setAlertOpen(true);
     });
-};
-
+  }
 
   return (
     <div className="h-auto pt-20 pb-6">

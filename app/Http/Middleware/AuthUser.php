@@ -16,7 +16,7 @@ class AuthUser
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::guard('user')->check()) {
+        if (!Auth::check()) {
             return response()->json([
                 'message' => 'unotoraze'
             ],403);

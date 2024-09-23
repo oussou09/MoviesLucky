@@ -1,14 +1,33 @@
-import React from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import ButtonHover from './ButtonHover'
+import { useLocation } from 'react-router-dom'; // Ensure this is imported
 
 
 
 
 export default function Pricing() {
 
+    const [pageStyleDiv1, setPagestyleDiv1] = useState('')
+    const [pageStyleDiv2, setPagestyleDiv2] = useState('')
+    const location = useLocation(); // Get the current location
+
+
+    useEffect(() => {
+
+        if (location.pathname === '/pricing') {
+            setPagestyleDiv1('pt-[155px] pb-20 md:pb-0 bg-[#181616] flex justify-start items-center')
+            setPagestyleDiv2('container mx-auto max-w-screen-xl px-4 h-auto md:h-[76vh] ')
+        }
+        else{
+            setPagestyleDiv1('pt-10 pb-20 bg-[#181616] flex justify-start items-center')
+            setPagestyleDiv2('container mx-auto max-w-screen-xl px-4')
+        }
+
+      }, [location.pathname]);
+
   return (
-    <div className="py-20 bg-[#181616]">
-    <div className="container mx-auto max-w-screen-xl px-4">
+    <div className={pageStyleDiv1}>
+    <div className={pageStyleDiv2}>
       <div className="text-center mb-10">
         <h1 className="text-4xl text-white font-bold">
           <span className="text-[#1f83ed]">M</span>ovies<span className="text-[#1f83ed]">L</span>ucky Pricing
@@ -65,7 +84,7 @@ export default function Pricing() {
             <li>4K Video Quality</li>
           </ul>
           <div className="text-center">
-                <ButtonHover text="Register now" link={`/payment/{34.99}/VIP`} />
+                <ButtonHover text="Register now" link={`/payment/34.99/VIP`} />
           </div>
         </div>
       </div>

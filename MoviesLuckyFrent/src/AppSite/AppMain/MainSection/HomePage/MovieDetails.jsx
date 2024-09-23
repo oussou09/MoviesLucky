@@ -2,7 +2,7 @@ import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
 import { Badge } from '@mui/material'; // Correct import from MUI
-import "../../assets/Loading.css";
+import "../../../../assets/Loading.css";
 
 export default function MovieDetails() {
 

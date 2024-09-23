@@ -81,7 +81,7 @@ const Profile = () => {
 
   return (
 
-    <div className="container mx-auto px-4 pb-[95px] pt-[130px] h-auto">
+    <div className="container mx-auto px-4 pb-[95px] pt-[130px] h-full">
       <div className="flex flex-wrap -mx-4">
         <div className="w-full md:w-1/3 px-4 mb-4">
           <div className="bg-white shadow rounded-lg p-6">

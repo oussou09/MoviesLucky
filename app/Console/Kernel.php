@@ -19,8 +19,9 @@ class Kernel extends ConsoleKernel
 
         // Run your custom 'tokens:remove-expired' command every hour
         // $schedule->command('tokens:remove-expired')->hourly();
+        // $schedule->command('tokens:remove-expired')->everyMinute();
 
-        $schedule->command('tokens:remove-expired')->everyMinute();
+        $schedule->command('tokens:prune')->daily();
     }
 
     /**
@@ -36,7 +37,6 @@ class Kernel extends ConsoleKernel
         // Register additional commands here if needed
         $this->commands([
             ClearAllCaches::class,
-            RemoveExpiredTokens::class,
         ]);
     }
 }

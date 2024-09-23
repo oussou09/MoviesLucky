@@ -1,11 +1,11 @@
 import React from 'react'
 import AuthFormIcon from '../../../../assets/imgs/svgs/AuthFormIcon.webp'
-import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import UserCreateToken from '../../../utils/UserCreateToken';
-import { useNavigate } from 'react-router-dom'; // useNavigate instead of browserHistory
+import { Link, useNavigate } from 'react-router-dom'; // useNavigate instead of browserHistory
 import Cookies from 'js-cookie';
+import { getCsrfToken } from '../../../utils/csrfTokenCheck';
 
 
 export default function FromLogin() {
@@ -19,32 +19,25 @@ export default function FromLogin() {
             password: data.password
         };
 
-        // Fetch CSRF cookie and then perform login
-        axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', { withCredentials: true })
-        .then(() => {
-            const csrfToken = Cookies.get('XSRF-TOKEN');
-            console.log(csrfToken);
-            axios.post('http://127.0.0.1:8000/api/login', ValueDataContact, {
-                withCredentials: true, // Ensure credentials are included
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-XSRF-TOKEN': csrfToken,  // Add the CSRF token here
-                }
-            })
-            .then(response => {
-                console.log('Login successful:', response);
-                // Store the token in cookies
-                Cookies.set('auth_token', response.data.token, { expires: 7 });
-                navigate('/'); // Redirect to the desired route
-            })
-            .catch(error => {
-                console.error('Login error:', error);
-            });
+getCsrfToken()
+  .then(csrfToken =>  axios.post('http://127.0.0.1:8000/api/login', ValueDataContact, {
+            withCredentials: true, // Ensure credentials are included
+            headers: {
+                'Content-Type': 'application/json',
+                'X-XSRF-TOKEN': csrfToken,  // Use the existing CSRF token
+            }
+        })
+        .then(response => {
+            console.log('Login successful:', response);
+            // Store the auth token in cookies
+            Cookies.set('auth_token', response.data.token, { expires: 7 });
+            navigate('/'); // Redirect to the desired route
+            window.location.reload(); // Reload to reflect the authentication state
         })
         .catch(error => {
-            console.error('Error fetching CSRF token:', error);
-        });
-    };
+            console.error('Login error:', error);
+        })
+    )};
 
 
 
@@ -140,12 +133,12 @@ export default function FromLogin() {
 
                         <p className="mb-0 mt-2 pt-1 text-sm font-semibold">
                         Dont have an account?
-                        <a
-                        href="/register"
+                        <Link
+                        to="/register"
                         className="text-danger transition duration-150 ease-in-out hover:text-danger-600 focus:text-danger-600 active:text-danger-700 border-b-2 border-gray-500 ml-2"
                         >
                             Register
-                        </a>
+                        </Link>
                         </p>
                     </div>
                 </div>

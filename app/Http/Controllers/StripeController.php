@@ -8,71 +8,45 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Stripe\Charge;
 use Stripe\Stripe;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\Log;
-
 
 class StripeController extends Controller
 {
     public function stripeRequest(Request $request)
     {
-        Log::info('Stripe request data:', $request->all());
-        // Set the Stripe API key
-        Stripe::setApiKey(config('services.stripe.secret'));
+        Stripe::setApiKey(config('services.stripe.secret')); // Use your Stripe secret key
 
         try {
-            // Check if the user is authenticated
-            if (!Auth::guard('user')->check()) {
+            // Check if user is authenticated
+            if (Auth::check()) {
+                // Get the token from the request
+                $token = $request->input('stripeToken');
+                $amount = intval($request->amount) * 100; // Amount in cents
 
-                try {
-                    // Create a charge with Stripe
-                    Charge::create([
-                        'amount' => $request->price * 100, // Amount in cents
-                        'currency' => 'usd',
-                        'source' => $request->stripeToken,
-                        'description' => 'Payment description',
-                    ]);
-
-                    // Create a subscription record
-                    $SubData = [
-                        'user_id' => Auth::guard('user')->user()->id, // User ID for the subscription
-                        'type_subscription' => $request->price === 14.99 ? 1 : 2 // Subscription type
-                    ];
-                    Subscription::create($SubData);
-
-                    // Return a success response
-                    return response()->json([
-                        'message' => 'Your Subscription ' . $SubData['type_subscription'] . ' has been added successfully.',
-                        'status' => 201,
-                    ]);
-
-                } catch (\Exception $ex) {
-                    // Handle payment errors
-                    return response()->json([
-                        'message' => 'Payment failed: ' . $ex->getMessage(),
-                        'status' => 502,
-                    ]);
-                }
-
-            } else {
-                // Handle logic for authenticated users here
-                // You might want to charge the user or update their subscription
-                return response()->json([
-                    'message' => 'Authenticated users not supported yet.',
-                    'status' => 400,
+                // Create the charge
+                $charge = Charge::create([
+                    'amount' => $amount,
+                    'currency' => 'usd',
+                    'source' => $token, // This is the Stripe token from frontend
+                    'description' => 'Payment for subscription',
                 ]);
+
+                // Create a subscription record in the database
+                $subscription = Subscription::create([
+                    'user_id' => Auth::user()->id,
+                    'type_subscription' => $request->input('subscriptionType') === 'Premium' ? 1 : 2,
+                ]);
+
+                // Return a success response
+                return response()->json(['status' => 201, 'message' => 'Payment successful', 'data' => $subscription], 201);
+            } else {
+                return response()->json(['status' => 403, 'message' => 'User is not authenticated'], 403);
             }
 
         } catch (\Exception $ex) {
-            // Handle other errors
-            return response()->json([
-                'message' => 'An error occurred: ' . $ex->getMessage(),
-                'status' => 500,
-            ]);
+            return response()->json(['status' => 500, 'message' => $ex->getMessage()], 500);
         }
     }
+
 
 
 }

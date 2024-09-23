@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
 
 
 class AuthController extends Controller
@@ -27,7 +28,7 @@ class AuthController extends Controller
       if (Auth::attempt($credentials)) {
         $user = Auth::user();
 
-        $token = $user->createToken('authToken', ['*'], now()->addMinutes(60)); // Token expires in 60 minutes
+        $token = $user->createToken('authToken', ['*'], now()->addMinutes(10080)); // Token expires in 60 minutes
 
         // Regenerate session ID to prevent session fixation attacks
         $request->session()->regenerate();

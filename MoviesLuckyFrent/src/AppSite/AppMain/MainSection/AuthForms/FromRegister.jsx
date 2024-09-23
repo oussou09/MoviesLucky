@@ -1,46 +1,15 @@
 import React from 'react'
-import AuthFormIcon from '../../../../assets/imgs/svgs/AuthFormIcon.webp'
-import { Link } from 'react-router-dom'
-import { useForm } from 'react-hook-form';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-
+import { useForm } from 'react-hook-form';
+import { Link, useNavigate } from 'react-router-dom'; // useNavigate instead of browserHistory
+import AuthFormIcon from '../../../../assets/imgs/svgs/AuthFormIcon.webp'
+import { getCsrfToken } from '../../../utils/csrfTokenCheck';
 
 export default function FromRegister() {
 
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();  // Initialize the navigate hook
-
-    // const onSubmit = async (data) => {
-    //     const ValueDataContact = {
-    //         firstName: data.firstName,
-    //         lastName: data.lastName,
-    //         email: data.email,
-    //         password: data.password
-    //     }
-    //     try {
-
-    //         await axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', {
-    //             withCredentials: true,
-    //         });
-    //       const result = await axios.post('http://127.0.0.1:8000/api/register', ValueDataContact,
-    //         {
-    //             withCredentials: true,
-    //         }
-    //        );
-    //        reset();
-    //        navigate('/login');
-    //     //    browserHistory.push('/login')
-    //       console.log('Form submitted:', result);
-    //     } catch (error) {
-    //       console.log('Error posting data:', error);
-    //       console.error(ValueDataContact);
-
-    //     }
-    //   };
-
-
 
     const onSubmit = async (data) => {
         const ValueDataContact = {
@@ -49,31 +18,27 @@ export default function FromRegister() {
             email: data.email,
             password: data.password
         }
-        axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', { withCredentials: true })
-            .then(() => {
-                const csrfToken = Cookies.get('XSRF-TOKEN');
-                axios.post('http://127.0.0.1:8000/api/register', ValueDataContact,
-                    {
-                    withCredentials: true, // Ensure credentials are included
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-XSRF-TOKEN': csrfToken,  // Add the CSRF token here
-                    }
-                })
-                .then(response => {
-                    console.log('Registration successful:', response);
-                    navigate('/login');
-                })
-                .catch(error => {
-                    console.log(ValueDataContact);
 
-                    console.error('Registration error:', error);
-                });
+        getCsrfToken()
+        .then(csrfToken => axios.post('http://127.0.0.1:8000/api/register', ValueDataContact,
+                {
+                withCredentials: true, // Ensure credentials are included
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': csrfToken,  // Add the CSRF token here
+                }
+            })
+            .then(response => {
+                console.log('Registration successful:', response);
+                navigate('/login');
             })
             .catch(error => {
-                console.error('Error fetching CSRF token:', error);
-            });
-      };
+                console.log(ValueDataContact);
+
+                console.error('Registration error:', error);
+            })
+        )
+    };
 
 
 
@@ -191,12 +156,12 @@ export default function FromRegister() {
                     <div className="text-center lg:text-center">
                         <p className="mb-0 mt-2 pt-1 text-sm font-semibold">
                         Already have account?
-                        <a
-                        href="/login"
+                        <Link
+                        to="/login"
                         className="text-danger transition duration-150 ease-in-out hover:text-danger-600 focus:text-danger-600 active:text-danger-700 border-b-2 border-gray-500 ml-2"
                         >
                             Login
-                        </a>
+                        </Link>
                         </p>
                     </div>
                 </div>

@@ -3,18 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import "../../../../assets/Loading.css";
 import axios from 'axios';
-import { Button } from '@mui/material'; // Import Material UI button
-import { useParams } from 'react-router-dom';
+import { Button } from '@mui/material';
 
 export default function MoviesList() {
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true); // Loading state
 
-    const [visibleItems, setVisibleItems] = useState(18); // Initially display 8 items
+    const [visibleItems, setVisibleItems] = useState(20); // Initially display 8 items
 
     // Load more function to show more items
     const loadMoreItems = () => {
-      setVisibleItems((prevVisibleItems) => prevVisibleItems + 12); // Load 8 more items
+      setVisibleItems((prevVisibleItems) => prevVisibleItems + 15); // Load 8 more items
     };
 
 
@@ -35,7 +34,7 @@ export default function MoviesList() {
 if (loading) {
     const loaders = Array.from({ length: 8 });
     return (
-        <div className="container flex flex-col justify-center items-center mx-auto pt-28">
+        <div className="container flex flex-col justify-center items-center mx-auto pt-28 ">
             <div className="flex flex-wrap mx-10 md:-mx-3 lx:-mx-28">
                 {loaders.map((_, index) => (
                     <div
@@ -64,8 +63,9 @@ if (loading) {
     <div className="container flex flex-col justify-center items-center mx-auto pt-28">
       <div className="flex flex-wrap -mx-3 px-5 lg:px-10">
         {movies.slice(0, visibleItems).map((data, index) => (
-          <div key={index} className="w-1/3 md:w-1/3 lg:w-1/5 xl:w-1/5 px-3 mb-6">
+          <div key={index} className="w-1/3 md:w-1/3 lg:w-1/5 xl:w-1/5 px-3 mb-6 aspect-w-16 aspect-h-9">
             <Link to={`/movie/${data.title}`} className="block relative overflow-hidden bg-gray-800 cursor-pointer rounded">
+            <div className="aspect-w-1 aspect-h-1">
               {data.thumbnail ? (
                 <img
                   src={data.thumbnail}
@@ -94,6 +94,7 @@ if (loading) {
                   </div>
                 </div>
               </div>
+            </div>
             </Link>
           </div>
         ))}
@@ -101,7 +102,7 @@ if (loading) {
 
       {/* Load More Button */}
       {visibleItems < movies.length && (
-        <div className="after:h-px my-24 w-full flex items-center before:h-px before:flex-1 before:bg-gray-300 before:content-[''] after:h-px after:flex-1 after:bg-gray-300 after:content-['']">
+        <div className="after:h-px mt-11 mb-5 w-full flex items-center before:h-px before:flex-1 before:bg-gray-300 before:content-[''] after:h-px after:flex-1 after:bg-gray-300 after:content-['']">
             <button
             type="button"
             onClick={loadMoreItems}

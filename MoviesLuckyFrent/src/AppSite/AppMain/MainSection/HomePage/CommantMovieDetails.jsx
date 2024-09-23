@@ -1,31 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import user from '../../../assets/imgs/svgs/user.svg';
-import reply from '../../../assets/imgs/svgs/reply.svg';
-import lovelike from '../../../assets/imgs/svgs/lovelike.svg';
+import React, { useState, useEffect, useContext } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import Cookies from 'js-cookie';
-import { isAuthenticated } from '../../utils/authUtils';
 import { useParams } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
-
+import { getCsrfToken } from '../../../utils/csrfTokenCheck';
+import { AuthContext } from '../../../utils/AuthContext';
+import usericon from '../../../../assets/imgs/svgs/user.svg';
 
 
 export default function CommantMovieDetails() {
 
+    const { user, authenticated, loading } = useContext(AuthContext); // Use loading from context
     const { register, handleSubmit, formState: { errors }, reset } = useForm();
     const { title } = useParams();
-    const [authenticated, setAuthenticated] = useState(false);
     const [comments, setComments] = useState([]);
     const timeAgo = (date) => {
         return formatDistanceToNow(new Date(date), { addSuffix: true });
     };
-
-
-    useEffect(() => {
-        // Check if the user is authenticated
-        setAuthenticated(isAuthenticated());
-    }, []);
 
     useEffect(() => {
         // Fetch comments for the specific movie title
@@ -46,7 +38,7 @@ export default function CommantMovieDetails() {
     }, [title]); // Re-run the effect when the title changes
 
     useEffect(() => {
-        console.log('Updated comments:', comments); // This will log the comments after state has been updated
+        // console.log('Updated comments:', comments); // This will log the comments after state has been updated
     }, [comments]); // This will run whenever the `comments` state changes
 
     const onSubmit = async (data) => {
@@ -55,17 +47,15 @@ export default function CommantMovieDetails() {
             description: data.message
 
         }
-        console.log('Form :', ValueDataContact);
 
-        axios.get('http://127.0.0.1:8000/sanctum/csrf-cookie', { withCredentials: true })
-        .then(() => {
-            axios.post('http://127.0.0.1:8000/api/Comments', ValueDataContact,
+        getCsrfToken()
+            .then(csrfToken => axios.post('http://127.0.0.1:8000/api/Comments', ValueDataContact,
                 {
                 withCredentials: true, // Ensure credentials are included
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${Cookies.get('auth_token')}`, // Send the auth token
-                    'X-XSRF-TOKEN': Cookies.get('XSRF-TOKEN'), // Send the CSRF token (if applicable)
+                    'X-XSRF-TOKEN': csrfToken, // Send the CSRF token (if applicable)
                 }
             })
             .then(response => {
@@ -75,11 +65,8 @@ export default function CommantMovieDetails() {
             })
             .catch(error => {
                 console.error('Error posting data::', error);
-            });
-        })
-        .catch(error => {
-            console.error('Error fetching CSRF token:', error);
-        });
+            })
+        )
     };
 
   return (
@@ -89,7 +76,7 @@ export default function CommantMovieDetails() {
       <h2 className="w-full text-white text-4xl font-bold font-manrope leading-normal">Comments</h2>
       <form method='POST' onSubmit={handleSubmit(onSubmit)} className="w-full flex-col justify-start items-start gap-5 flex">
         <div className="w-full rounded-3xl justify-start items-start gap-3.5 inline-flex">
-          <img className="w-10 h-10 object-cover" src={user} alt="John smith image" />
+          <img className="w-10 h-10 object-cover" src={usericon} alt="user image" />
           <textarea
                 disabled={!authenticated}
                 name=""
@@ -125,12 +112,12 @@ export default function CommantMovieDetails() {
         comments.map((comment) => (
         <div key={comment.id} className="w-full pb-6 border-b border-gray-300 justify-start items-start gap-2.5 inline-flex">
 
-            <img className="w-10 h-10 rounded-full object-cover" src={user} alt="Mia Thompson image" />
+            <img className="w-10 h-10 rounded-full object-cover" src={usericon} alt="user image" />
             <div className="w-full flex-col justify-start items-start gap-3.5 inline-flex">
                 <div className="w-full justify-start items-start flex-col flex gap-1">
                     <div className="w-full justify-between items-start gap-1 inline-flex">
                         <h5 className="text-white text-sm font-semibold leading-snug">
-                            {comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : 'Unknown User'}
+                            {comment.user ? `${comment.user.firstName} ${comment.user.lastName}` : `${user.firstName} ${user.lastName}`}
                         </h5>
                         <span className="text-right text-gray-400 text-xs font-normal leading-5">
                             {timeAgo(comment.created_at)}
@@ -140,17 +127,12 @@ export default function CommantMovieDetails() {
                         {comment.description}
                     </h5>
                 </div>
-                <div className="justify-start items-start gap-5 inline-flex">
-                    <a href="" className="w-5 h-5 flex items-center justify-center group">
-                        <img className="w-5 h-5" src={lovelike} alt="Like" />
-                    </a>
-                </div>
             </div>
         </div>
 
             ))
         ) : (
-            <p className='text-white text-xl font-bold'>No comments yet.</p>
+            <p className='text-white text-xl font-bold'>There is No comments yet.</p>
         )}
 
 
@@ -163,51 +145,3 @@ export default function CommantMovieDetails() {
   )
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            {/* <div className="w-full pb-6 border-b border-gray-300 justify-start items-start gap-2.5 inline-flex">
-                <img className="w-10 h-10 rounded-full object-cover" src={user} alt="Mia Thompson image" />
-                <div className="w-full flex-col justify-start items-start gap-3.5 inline-flex">
-                    <div className="w-full justify-start items-start flex-col flex gap-1">
-                    <div className="w-full justify-between items-start gap-1 inline-flex">
-                        <h5 className="text-white text-sm font-semibold leading-snug">Mia Thompson</h5>
-                        <span className="text-right text-gray-400 text-xs font-normal leading-5">12 hours ago</span>
-                    </div>
-                    <h5 className="text-gray-300 text-sm font-normal leading-snug">
-                        In vestibulum sed aliquet id turpis. Sagittis sed sed adipiscing velit habitant quam. Neque feugiat consectetur consectetur turpis.
-                    </h5>
-                    </div>
-                    <div className="justify-start items-start gap-5 inline-flex">
-                    <a href="" className="w-5 h-5 flex items-center justify-center group">
-                        <img className="w-5 h-5" src={lovelike} alt="lovelike" />
-                    </a>
-                    </div>
-                </div>
-            </div> */}
-
-
-
-
-
-
-
-
-            {/* <img
-                className="w-10 h-10 rounded-full object-cover"
-                src={comment.user.avatar || 'default-avatar.jpg'}
-                alt={`${comment.user.first_name} ${comment.user.last_name}'s avatar`}
-            /> */}

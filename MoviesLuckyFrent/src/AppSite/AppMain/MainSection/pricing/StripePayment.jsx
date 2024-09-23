@@ -16,56 +16,56 @@ const StripePayment = () => {
     const navigate = useNavigate();  // Initialize the navigate hook
 
 
-
     useEffect(() => {
-        console.log(authenticated)
         if (user && authenticated) {
           setUsers(user);
         }
       }, [user, authenticated]);
 
+      const onSubmit = async (e) => {
+        e.preventDefault(); // Prevent default form submission behavior
 
-    const onSubmit = async () => {
-        if (!stripe || !elements) return; // Ensure Stripe is loaded
+        if (!stripe || !elements) return; // Make sure Stripe is loaded
 
-        const cardNumberElement = elements.getElement(CardNumberElement);
-        const { token, error } = await stripe.createToken(cardNumberElement);
+        const cardElement = elements.getElement(CardNumberElement);
+
+        const { token, error } = await stripe.createToken(cardElement);
 
         if (error) {
-          console.error(error.message);
+          console.error('Error generating token:', error.message);
         } else {
           stripeTokenHandler(token);
         }
       };
 
-  const stripeTokenHandler = async (token) => {
-    console.log(token)
+      const stripeTokenHandler = async (token) => {
+        try {
+          const response = await fetch('http://127.0.0.1:8000/api/stripe', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-XSRF-TOKEN': Cookies.get('XSRF-TOKEN'), // CSRF token if needed
+              Authorization: `Bearer ${Cookies.get('auth_token')}`, // Auth token if needed
+            },
+            body: JSON.stringify({
+              stripeToken: token.id, // Send only the token ID
+              amount: MountSub, // Ensure this matches what your backend expects
+              subscriptionType: Type, // Convert to integer
+            }),
+          });
+          const data = await response.json();
+          if (response.ok) {
+            console.log('Payment successful!', data);
+            navigate(-1);
+          } else {
+            console.error('Payment failed:', data);
+          }
+        } catch (error) {
+          console.error('An error occurred:', error);
+        }
+      };
 
-    try {
-      const response = await fetch('http://127.0.0.1:8000/api/stripe', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-XSRF-TOKEN': Cookies.get('XSRF-TOKEN'),
-          Authorization: `Bearer ${Cookies.get('auth_token')}`,
-        },
-        body: JSON.stringify({
-            token: token.id, // Send token ID
-            amount: MountSub,
-            subscriptionType: Type
-          }),
-      });
 
-      const data = await response.json();
-      if (data.status === 201) {
-        console.log('Payment successful!', data);
-      } else {
-        console.error('Payment failed.', data);
-      }
-    } catch (error) {
-      console.error('An error occurred while processing your payment.', error);
-    }
-  };
 
   if (!authenticated) {
     navigate('/login'); // Redirect to the desired route
